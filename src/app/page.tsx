@@ -48,13 +48,12 @@ export default function Home() {
         <div className="hidden sm:block">{time}</div>
       </div>
 
-      {/* SECURE GRID SYSTEM */}
-      <div className="flex-1 grid grid-cols-[1fr_80px] md:grid-cols-[1fr_220px] overflow-hidden">
+      {/* MAIN CONTENT GRID */}
+      <div className="flex-1 grid grid-cols-[1fr_80px] md:grid-cols-[1fr_200px] overflow-hidden">
         
         {/* CENTER: TILES & INPUT */}
         <div className="relative flex flex-col items-center justify-center p-4 overflow-y-auto border-r border-white/5">
           <div className="w-full max-w-lg mb-8">
-            <label className="block text-[8px] text-gray-600 mb-2 tracking-widest uppercase">User_Uplink_Primary</label>
             <textarea
               autoFocus
               className="bg-transparent border-none outline-none w-full h-32 md:h-40 text-lg md:text-xl resize-none uppercase caret-white"
@@ -64,12 +63,11 @@ export default function Home() {
             />
           </div>
 
-          {/* TILE REGISTER */}
           <div className="flex flex-wrap justify-center gap-0.5 md:gap-1 w-full max-w-lg pb-10">
             {[...alphabet, ...numbers].map((char) => (
               <div key={char} className="flex flex-col items-center">
                 <div 
-                  className="w-2.5 h-2.5 md:w-4 md:h-4 border border-white/10 transition-colors"
+                  className="w-2.5 h-2.5 md:w-4 md:h-4 border border-white/10"
                   style={{ backgroundColor: `rgba(255, 255, 255, ${(tileValues[char] || 0) / 60})` }}
                 />
                 <span className="text-[4px] md:text-[5px] text-gray-700 mt-0.5">{char}</span>
@@ -78,17 +76,17 @@ export default function Home() {
           </div>
         </div>
 
-        {/* RIGHT: UNIFORM WALL OF CODE */}
-        {/* We use 'justify-end' to keep them locked to the right edge */}
-        <div className="flex justify-end p-1 md:p-2 gap-1 md:gap-2 overflow-hidden select-none bg-black/40">
-          {Array.from({ length: 6 }).map((_, i) => (
+        {/* RIGHT: SEAMLESS DATA WALL */}
+        {/* Removed all 'gap' properties and added 'tracking-tighter' */}
+        <div className="flex justify-end overflow-hidden select-none bg-black">
+          {Array.from({ length: 8 }).map((_, i) => (
             <div 
               key={i} 
-              className="flex flex-col text-[7px] md:text-[9px] leading-tight break-all opacity-40 w-[10px] md:w-[28px] shrink-0"
+              className="flex flex-col text-[8px] md:text-[11px] leading-[0.8] tracking-tighter opacity-30 text-center w-[10px] md:w-[22px] shrink-0"
             >
               {Array.from({ length: 150 }).map((_, j) => (
-                <span key={j} className={`transition-colors duration-300 ${isTyping ? 'text-white' : 'text-gray-800'}`}>
-                  {Math.random().toString(36).slice(2, 4).toUpperCase()}
+                <span key={j} className={`transition-colors duration-200 ${isTyping ? 'text-white' : 'text-gray-900'}`}>
+                  {Math.random().toString(36).slice(2, 3).toUpperCase()}
                 </span>
               ))}
             </div>
@@ -99,7 +97,7 @@ export default function Home() {
       {/* FOOTER */}
       <div className="p-4 text-[8px] text-gray-600 flex justify-between border-t border-white/5 bg-black z-30">
         <span>MEM_ALLOC: 1024MB</span>
-        <span>XAI_SYSTEM_v2.1</span>
+        <span>XAI_SYSTEM_v3.0</span>
       </div>
     </main>
   );
