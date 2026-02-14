@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
 export default function Home() {
   const [input, setInput] = useState('');
@@ -15,6 +15,11 @@ export default function Home() {
     }, 100);
     return () => clearInterval(timer);
   }, []);
+
+  // Generate stable random chars so they don't flicker too wildly
+  const staticChars = useMemo(() => 
+    Array.from({ length: 600 }).map(() => Math.random().toString(36).slice(2, 3).toUpperCase()), 
+  []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
@@ -34,70 +39,69 @@ export default function Home() {
 
   if (!mounted) return null;
 
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-  const numbers = "0123456789".split("");
-
   return (
-    <main className="fixed inset-0 bg-black text-white font-mono flex flex-col overflow-hidden selection:bg-white selection:text-black">
+    <main className="fixed inset-0 bg-black text-white font-mono flex flex-col overflow-hidden">
       {/* HEADER */}
-      <div className="p-4 md:p-8 flex justify-between text-[10px] tracking-[0.4em] opacity-50 border-b border-white/5 bg-black z-30">
+      <div className="p-4 md:p-8 flex justify-between text-[10px] tracking-[0.4em] opacity-40 border-b border-white/5 bg-black z-30">
         <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${isTyping ? 'bg-red-500 animate-pulse' : 'bg-white'}`} />
+          <div className={`w-2 h-2 rounded-full ${isTyping ? 'bg-red-500 shadow-[0_0_10px_red]' : 'bg-white'}`} />
           <span>DAT_STRM // {isTyping ? 'BUSY' : 'READY'}</span>
         </div>
         <div className="hidden sm:block">{time}</div>
       </div>
 
-      {/* MAIN CONTENT GRID */}
-      <div className="flex-1 grid grid-cols-[1fr_80px] md:grid-cols-[1fr_200px] overflow-hidden">
+      {/* MAIN LAYOUT */}
+      <div className="flex-1 grid grid-cols-[1fr_100px] md:grid-cols-[1fr_220px] overflow-hidden">
         
-        {/* CENTER: TILES & INPUT */}
-        <div className="relative flex flex-col items-center justify-center p-4 overflow-y-auto border-r border-white/5">
-          <div className="w-full max-w-lg mb-8">
-            <textarea
-              autoFocus
-              className="bg-transparent border-none outline-none w-full h-32 md:h-40 text-lg md:text-xl resize-none uppercase caret-white"
-              placeholder="ENTER_DATA..."
-              value={input}
-              onChange={handleInputChange}
-            />
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-0.5 md:gap-1 w-full max-w-lg pb-10">
-            {[...alphabet, ...numbers].map((char) => (
+        {/* LEFT: INPUT & TILES */}
+        <div className="flex flex-col items-center justify-center p-4 border-r border-white/5">
+          <textarea
+            autoFocus
+            className="bg-transparent border-none outline-none w-full max-w-lg h-40 text-lg md:text-xl resize-none uppercase caret-white"
+            placeholder="ENTER_DATA..."
+            value={input}
+            onChange={handleInputChange}
+          />
+          
+          {/* TILE BAR */}
+          <div className="flex flex-wrap justify-center gap-1 w-full max-w-lg mt-10">
+            {"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("").map((char) => (
               <div key={char} className="flex flex-col items-center">
                 <div 
-                  className="w-2.5 h-2.5 md:w-4 md:h-4 border border-white/10"
+                  className="w-3 h-3 md:w-4 md:h-4 border border-white/10"
                   style={{ backgroundColor: `rgba(255, 255, 255, ${(tileValues[char] || 0) / 60})` }}
                 />
-                <span className="text-[4px] md:text-[5px] text-gray-700 mt-0.5">{char}</span>
+                <span className="text-[5px] text-gray-700 mt-0.5">{char}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* RIGHT: SEAMLESS DATA WALL */}
-        {/* Removed all 'gap' properties and added 'tracking-tighter' */}
-        <div className="flex justify-end overflow-hidden select-none bg-black">
-          {Array.from({ length: 8 }).map((_, i) => (
+        {/* RIGHT: THE SEAMLESS WALL */}
+        {/* We use a grid with 0 gap to ensure characters touch perfectly */}
+        <div className="grid grid-cols-4 md:grid-cols-6 gap-0 bg-black overflow-hidden select-none border-l border-white/5">
+          {staticChars.map((char, i) => (
             <div 
               key={i} 
-              className="flex flex-col text-[8px] md:text-[11px] leading-[0.8] tracking-tighter opacity-30 text-center w-[10px] md:w-[22px] shrink-0"
+              className={`
+                flex items-center justify-center
+                text-[10px] md:text-[14px] 
+                h-[15px] md:h-[20px] 
+                border-[0.5px] border-white/5
+                transition-colors duration-200
+                ${isTyping ? 'text-white bg-white/5' : 'text-gray-900 bg-transparent'}
+              `}
             >
-              {Array.from({ length: 150 }).map((_, j) => (
-                <span key={j} className={`transition-colors duration-200 ${isTyping ? 'text-white' : 'text-gray-900'}`}>
-                  {Math.random().toString(36).slice(2, 3).toUpperCase()}
-                </span>
-              ))}
+              {char}
             </div>
           ))}
         </div>
       </div>
 
       {/* FOOTER */}
-      <div className="p-4 text-[8px] text-gray-600 flex justify-between border-t border-white/5 bg-black z-30">
+      <div className="p-4 text-[8px] text-gray-600 flex justify-between border-t border-white/5 bg-black">
         <span>MEM_ALLOC: 1024MB</span>
-        <span>XAI_SYSTEM_v3.0</span>
+        <span>XAI_SYSTEM_v4.0</span>
       </div>
     </main>
   );
