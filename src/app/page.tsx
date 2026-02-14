@@ -49,12 +49,12 @@ export default function Home() {
       </div>
 
       {/* SECURE GRID SYSTEM */}
-      <div className="flex-1 grid grid-cols-[1fr_80px] md:grid-cols-[1fr_240px] overflow-hidden">
+      <div className="flex-1 grid grid-cols-[1fr_80px] md:grid-cols-[1fr_220px] overflow-hidden">
         
         {/* CENTER: TILES & INPUT */}
         <div className="relative flex flex-col items-center justify-center p-4 overflow-y-auto border-r border-white/5">
           <div className="w-full max-w-lg mb-8">
-            <label className="block text-[8px] text-gray-600 mb-2 tracking-widest">USER_UPLINK_PRIMARY</label>
+            <label className="block text-[8px] text-gray-600 mb-2 tracking-widest uppercase">User_Uplink_Primary</label>
             <textarea
               autoFocus
               className="bg-transparent border-none outline-none w-full h-32 md:h-40 text-lg md:text-xl resize-none uppercase caret-white"
@@ -78,10 +78,14 @@ export default function Home() {
           </div>
         </div>
 
-        {/* RIGHT: WALL OF CODE (6-Column Stack) */}
-        <div className="flex p-1 md:p-2 gap-1 overflow-hidden select-none bg-black/40 border-l border-white/5">
+        {/* RIGHT: UNIFORM WALL OF CODE */}
+        {/* We use 'justify-end' to keep them locked to the right edge */}
+        <div className="flex justify-end p-1 md:p-2 gap-1 md:gap-2 overflow-hidden select-none bg-black/40">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="flex flex-col text-[6px] md:text-[9px] leading-tight break-all opacity-40 flex-1">
+            <div 
+              key={i} 
+              className="flex flex-col text-[7px] md:text-[9px] leading-tight break-all opacity-40 w-[10px] md:w-[28px] shrink-0"
+            >
               {Array.from({ length: 150 }).map((_, j) => (
                 <span key={j} className={`transition-colors duration-300 ${isTyping ? 'text-white' : 'text-gray-800'}`}>
                   {Math.random().toString(36).slice(2, 4).toUpperCase()}
@@ -95,7 +99,7 @@ export default function Home() {
       {/* FOOTER */}
       <div className="p-4 text-[8px] text-gray-600 flex justify-between border-t border-white/5 bg-black z-30">
         <span>MEM_ALLOC: 1024MB</span>
-        <span>XAI_SYSTEM_v2.0</span>
+        <span>XAI_SYSTEM_v2.1</span>
       </div>
     </main>
   );
