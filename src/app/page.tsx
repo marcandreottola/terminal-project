@@ -39,13 +39,14 @@ export default function Home() {
       {/* HEADER */}
       <div className="p-4 md:p-8 flex justify-between text-[10px] tracking-[0.4em] opacity-40 border-b border-white/5 bg-black z-30">
         <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${isTyping ? 'bg-red-500' : 'bg-white'}`} />
+          <div className={`w-2 h-2 rounded-full ${isTyping ? 'bg-red-500 shadow-[0_0_10px_red]' : 'bg-white'}`} />
           <span>DAT_STRM // {isTyping ? 'BUSY' : 'READY'}</span>
         </div>
-        <div>{time}</div>
+        <div className="hidden sm:block">{time}</div>
       </div>
 
-      <div className="flex-1 grid grid-cols-[1fr_100px] md:grid-cols-[1fr_220px] overflow-hidden">
+      {/* MAIN LAYOUT - Responsive Grid */}
+      <div className="flex-1 grid grid-cols-[1fr_80px] md:grid-cols-[1fr_220px] overflow-hidden">
         
         {/* LEFT: INPUT AREA */}
         <div className="flex flex-col items-center justify-center p-4 border-r border-white/5">
@@ -70,31 +71,24 @@ export default function Home() {
           </div>
         </div>
 
-        {/* RIGHT: THE SEAMLESS WALL (No Columns, just one text block) */}
-        <div className="bg-black overflow-hidden select-none border-l border-white/5 p-0">
-          <p className={`
-            break-all 
-            text-[11px] md:text-[15px] 
-            leading-[0.85] 
-            tracking-normal 
-            text-left 
-            w-full 
-            h-full
-            transition-colors 
-            duration-150
-            ${isTyping ? 'text-white' : 'text-gray-900'}
-          `}>
-            {Array.from({ length: 2000 }).map(() => 
-              Math.random().toString(36).slice(2, 3).toUpperCase()
-            ).join('')}
-          </p>
+        {/* RIGHT: REVERTED TO ORIGINAL COLUMN STYLE */}
+        <div className="flex p-2 gap-2 overflow-hidden select-none bg-black/40">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="flex flex-col text-[8px] md:text-[10px] leading-tight opacity-30 flex-1">
+              {Array.from({ length: 120 }).map((_, j) => (
+                <span key={j} className={`transition-colors duration-500 ${isTyping ? 'text-white' : 'text-gray-800'}`}>
+                  {Math.random().toString(16).slice(2, 4).toUpperCase()}
+                </span>
+              ))}
+            </div>
+          ))}
         </div>
       </div>
 
       {/* FOOTER */}
       <div className="p-4 text-[8px] text-gray-600 flex justify-between border-t border-white/5 bg-black">
         <span>MEM_ALLOC: 1024MB</span>
-        <span>XAI_SYSTEM_v6.0</span>
+        <span>XAI_SYSTEM_REVERTED</span>
       </div>
     </main>
   );
