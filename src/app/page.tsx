@@ -1,137 +1,92 @@
-'use client';
-import { useEffect, useState, useRef } from 'react';
+"use client";
+import React, { useState, useEffect } from 'react';
+import { Activity, MapPin, Navigation, Globe, Shield } from 'lucide-react';
 
-export default function Home() {
-  const [input, setInput] = useState('');
-  const [time, setTime] = useState('');
-  const [mounted, setMounted] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
-  const [hexLog, setHexLog] = useState<string[]>([]);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+export default function MissionControl() {
+  const [data, setData] = useState({
+    latitude: 0, longitude: 0, altitude: 0, velocity: 0, locationName: "SYNCING..."
+  });
 
-  const textToMidiHex = (char: string) => {
-    const code = char.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0');
-    return `90 ${code} 7F`;
+  const updateTelemetry = async () => {
+    try {
+      const issRes = await fetch('https://api.wheretheiss.at/v1/satellites/25544');
+      const iss = await issRes.json();
+      const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${iss.latitude}&longitude=${iss.longitude}&localityLanguage=en`);
+      const geo = await geoRes.json();
+      setData({
+        latitude: iss.latitude, longitude: iss.longitude, altitude: iss.altitude,
+        velocity: iss.velocity, locationName: geo.countryName || geo.locality || "INTERNATIONAL WATERS"
+      });
+    } catch (err) { console.error(err); }
   };
 
   useEffect(() => {
-    setMounted(true);
-    const timer = setInterval(() => {
-      setTime(new Date().toISOString().split('T')[1].slice(0, 11));
-    }, 100);
-
-    // STARFIELD BACKUP ENGINE
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let animationFrameId: number;
-    const stars = Array.from({ length: 150 }, () => ({
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
-      size: Math.random() * 1.2,
-      speed: Math.random() * 0.4 + 0.1
-    }));
-
-    const render = () => {
-      if (!ctx) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-      stars.forEach(star => {
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-        ctx.fill();
-        star.y += isTyping ? star.speed * 4 : star.speed;
-        if (star.y > canvas.height) star.y = 0;
-      });
-      animationFrameId = window.requestAnimationFrame(render);
-    };
-
-    const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-
-    window.addEventListener('resize', handleResize);
-    handleResize();
-    render();
-
-    return () => {
-      clearInterval(timer);
-      window.cancelAnimationFrame(animationFrameId);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [isTyping]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const val = e.target.value;
-    const lastChar = val.slice(-1);
-    setInput(val);
-    setIsTyping(true);
-    if (lastChar) {
-      setHexLog(prev => [textToMidiHex(lastChar), ...prev].slice(0, 40));
-    }
-    const timeout = setTimeout(() => setIsTyping(false), 300);
-    return () => clearTimeout(timeout);
-  };
-
-  if (!mounted) return null;
+    updateTelemetry();
+    const interval = setInterval(updateTelemetry, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <main className="fixed inset-0 bg-black text-white font-mono flex flex-col overflow-hidden">
-      
-      {/* SEN LIVE 4K FEED LAYER */}
-      <div className="absolute inset-0 z-0 opacity-30 grayscale contrast-125">
-        <iframe 
-          className="w-full h-full scale-[1.2]"
-          src="https://www.youtube.com/embed/live_stream?channel=UCkvW_7kp9LJrztmgA4q4bJQ&autoplay=1&mute=1&controls=0&modestbranding=1&showinfo=0&rel=0"
-          allow="autoplay; encrypted-media"
-          frameBorder="0"
-        />
-      </div>
-
-      {/* STARFIELD LAYER (BACKUP/OVERLAY) */}
-      <canvas ref={canvasRef} className="absolute inset-0 z-10 pointer-events-none mix-blend-screen" />
-
-      {/* HUD SCANLINES */}
-      <div className="absolute inset-0 pointer-events-none z-20 opacity-[0.05] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px]" />
-
-      {/* HEADER */}
-      <div className="p-4 md:p-8 flex justify-between text-[10px] tracking-[0.4em] opacity-60 border-b border-white/10 bg-black/80 backdrop-blur-md z-30">
-        <div className="flex items-center gap-2">
-          <div className={`w-1.5 h-1.5 rounded-full ${isTyping ? 'bg-red-500 shadow-[0_0_10px_red]' : 'bg-gray-600'}`} />
-          <span>SEN_SPACE_RELAY // ISS_4K_ACTIVE</span>
-        </div>
-        <div>{time} UTC</div>
-      </div>
-
-      {/* CONTENT */}
-      <div className="flex-1 grid grid-cols-[1fr_100px] md:grid-cols-[1fr_240px] overflow-hidden z-20">
-        <div className="flex flex-col items-center justify-center p-4">
-          <textarea
-            autoFocus
-            className="bg-transparent border-none outline-none w-full max-w-lg h-40 text-xl md:text-2xl resize-none uppercase caret-white text-center drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]"
-            placeholder="[SYSTEM_READY]"
-            value={input}
-            onChange={handleInputChange}
-          />
+    <div className="min-h-screen bg-[#050505] text-cyan-400 font-mono p-4">
+      <div className="max-w-7xl mx-auto flex flex-col gap-4">
+        
+        {/* TOP BAR */}
+        <div className="flex justify-between items-center border-b border-cyan-900 pb-2">
+          <h1 className="text-xl font-black tracking-widest flex items-center gap-2">
+            <Activity className="animate-pulse" size={20} /> LIVE_FEED_01
+          </h1>
+          <div className="text-[10px] text-cyan-800 tracking-[0.3em]">SECURE_UPLINK_ESTABLISHED</div>
         </div>
 
-        {/* RIGHT: MIDI/HEX LOG */}
-        <div className="bg-black/95 border-l border-white/10 p-4 flex flex-col gap-1 overflow-hidden">
-          <div className="text-[9px] mb-4 text-gray-500 border-b border-white/10 pb-2 tracking-widest">UPLINK_HEX</div>
-          {hexLog.map((hex, i) => (
-            <div key={i} className={`text-[10px] md:text-[13px] ${i === 0 ? 'text-white' : 'text-gray-900'}`}>{hex}</div>
-          ))}
-          {Array.from({ length: 40 }).map((_, i) => (
-            <div key={`n-${i}`} className="text-[10px] text-gray-900 opacity-20 font-mono">00 00 00</div>
-          ))}
+        <div className="grid grid-cols-12 gap-4">
+          
+          {/* THE VIDEO FEED (LEFT SIDE) */}
+          <div className="col-span-12 lg:col-span-8 aspect-video bg-black border border-cyan-900 relative">
+            <iframe 
+              className="w-full h-full"
+              src="https://www.youtube.com/embed/jPTD2gnZFUw?autoplay=1&mute=1&controls=0&showinfo=0" 
+              title="ISS Live Feed"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowFullScreen
+            />
+            {/* Overlay UI to make it look like a HUD */}
+            <div className="absolute top-4 left-4 pointer-events-none border-l-2 border-t-2 border-cyan-500 w-20 h-20 opacity-40" />
+            <div className="absolute bottom-4 right-4 pointer-events-none border-r-2 border-b-2 border-cyan-500 w-20 h-20 opacity-40" />
+          </div>
+
+          {/* THE DATA PANEL (RIGHT SIDE) */}
+          <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
+            <div className="bg-cyan-950/20 border border-cyan-900 p-6">
+              <label className="text-[10px] text-cyan-700 uppercase block mb-1">Current Sector</label>
+              <div className="text-3xl font-black text-white truncate">{data.locationName}</div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-cyan-950/10 border border-cyan-900 p-4">
+                <label className="text-[10px] text-cyan-700 block mb-1 uppercase">Lat</label>
+                <div className="text-xl font-bold">{data.latitude.toFixed(4)}</div>
+              </div>
+              <div className="bg-cyan-950/10 border border-cyan-900 p-4">
+                <label className="text-[10px] text-cyan-700 block mb-1 uppercase">Lng</label>
+                <div className="text-xl font-bold">{data.longitude.toFixed(4)}</div>
+              </div>
+            </div>
+
+            <div className="bg-cyan-950/10 border border-cyan-900 p-6 flex-grow flex flex-col justify-center relative overflow-hidden">
+               <div className="absolute top-2 right-2 opacity-10"><Globe size={80}/></div>
+               <label className="text-[10px] text-cyan-700 uppercase block mb-1 tracking-widest font-bold">Orbital Stats</label>
+               <div className="text-lg font-bold">ALT: {data.altitude.toFixed(0)} KM</div>
+               <div className="text-lg font-bold text-orange-500">VEL: {Math.round(data.velocity)} KM/H</div>
+            </div>
+
+            <div className="border border-green-900/50 bg-green-950/10 p-4 flex items-center justify-between">
+              <div className="text-[10px] text-green-700 font-bold uppercase tracking-widest">System_Integrity</div>
+              <Shield className="text-green-500" size={16} />
+            </div>
+          </div>
         </div>
       </div>
-
-      <div className="p-4 text-[8px] text-gray-600 flex justify-between border-t border-white/10 bg-black/95 z-30">
-        <span>RELAY: SEN_ORBITAL</span>
-        <span>XAI_UPLINK_v16.0</span>
-      </div>
-    </main>
+    </div>
   );
 }
